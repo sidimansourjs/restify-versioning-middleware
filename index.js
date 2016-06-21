@@ -2,14 +2,15 @@
 const
     restify = require('restify'),
     semver      = require("semver"),
+    unless = require('express-unless'),
     PREFIX_API  = "/api/"
     ;
 
-module.exports = function(exceptedRoutes) {
+module.exports = module.exports = function(prefix) {
 
   var versioningMiddleware = function versioningMiddleware (req, res, next){
 
-      req.url = req.url.replace(PREFIX_API, '');
+      req.url = req.url.replace(prefix || PREFIX_API, '');
 
       let pieces = req.url.replace(/^\/+/, '').split('/');
       let version = pieces[0];
@@ -27,18 +28,6 @@ module.exports = function(exceptedRoutes) {
       } else {
 
         if(req.url !== '/'){
-            let except      = exceptedRoutes;
-
-            let isExcepted  = false;
-
-            for (var i = except.length; i--;){
-              if(req.url.indexOf(except[i]) > -1){
-                isExcepted = true;
-                break;
-              }
-            }
-
-            if(!isExcepted)
               return next(new restify.InvalidVersionError('This is an invalid version'));
           }
 
@@ -47,6 +36,7 @@ module.exports = function(exceptedRoutes) {
       next();
   }
 
+  versioningMiddleware.unless = unless;
 
   return versioningMiddleware;
 };

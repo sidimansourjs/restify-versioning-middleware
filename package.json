@@ -24,6 +24,7 @@
     "url": "https://github.com/sidimansourjs/restify-versioning-middleware.git"
   },
   "dependencies": {
+    "express-unless": "^0.3.0",
     "restify": "^4.1.1",
     "semver": "^5.1.0"
   },
