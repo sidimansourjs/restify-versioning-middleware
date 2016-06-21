@@ -24,7 +24,11 @@
     "url": "https://github.com/sidimansourjs/restify-versioning-middleware.git"
   },
   "dependencies": {
+    "bluebird": "^3.4.1",
+    "chai": "^2.1.2",
+    "chai-as-promised": "^4.3.0",
     "express-unless": "^0.3.0",
+    "mocha": "^2.2.1",
     "restify": "^4.1.1",
     "semver": "^5.1.0"
   },

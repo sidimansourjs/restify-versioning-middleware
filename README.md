@@ -4,6 +4,7 @@
 
 A module that offers a function that can be user as a [restify.js](http://restify.com) middleware. The module will check incoming calls (as a PRE handler in Restify) and will throw an `InvalidVersionError` when no version has been received in neither URL nor request headers.
 
+> Note: root URL "/" is always accepted as valid
 
 ## Install
 ```
