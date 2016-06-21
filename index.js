@@ -1,101 +1,52 @@
 "use strict";
-const 
-	logger = require("bunyan"),
-	restify = require("restify")
-	;
+const
+    restify = require('restify'),
+    semver      = require("semver"),
+    PREFIX_API  = "/api/"
+    ;
 
-class RestifyServerManager {
-	constructor(config){
-		this.config = config;
-		this.server
-	}
-	
-	createServer(){
-		
-		// PRE handlers
-		server.pre(restify.pre.sanitizePath());
-		server.pre(versioningMiddleware(getExceptedRoutes()));
-	}
-	
-	startServer(){
-	 return server.listen(config.server.port, function () {
-       console.log(config.server.protocol + " Server listening on port: " + config.server.port);
-     });
-	}
-	
-	stopServer(){
-		this.server.close();
-	}
-}
+module.exports = function(exceptedRoutes) {
 
-module.exports = RestifyServerManager;
+  var versioningMiddleware = function versioningMiddleware (req, res, next){
 
-/**
- * @private
- * @memberOf ServerSetup
- * Applies API global headers to avoid caching
- * @returns {Void}
- */
-var noCacheMiddleware = function noCacheMiddleware(req, res, next) {
-	res.header("Cache-Control", "no-cache, no-store, must-revalidate");
-	res.header("Pragma", "no-cache");
-	res.header("Expires", -1);
-	res.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-	res.header("X-Content-Type-Options", "no sniff");
-	next();
-}
+      req.url = req.url.replace(PREFIX_API, '');
 
-var getExceptedRoutes = function getExceptedRoutes(){
-      let except      = [];
+      let pieces = req.url.replace(/^\/+/, '').split('/');
+      let version = pieces[0];
 
-      return except;
-    }
+      version = version.replace(/v(\d{1})\.(\d{1})\.(\d{1})/, '$1.$2.$3');
+      version = version.replace(/v(\d{1})\.(\d{1})/, '$1.$2.0');
+      version = version.replace(/v(\d{1})/, '$1.0.0');
 
+      if (semver.valid(version)) {
 
-/**
- * @private
- * @memberOf ServerSetup
- * Sets up all api routes in the new API server
- * @returns {Void}
- */
-var setupPreHandlers = function setupPreHandlers () {
-  
-  return;
-}
+        req.url = req.url.replace(pieces[0], '');
+        req.headers = req.headers || [];
+        req.headers['accept-version'] = version;
 
+      } else {
 
-/**
- * @private
- * @memberOf ServerSetup
- * Returns a configuration object for restify server start up based on config
- * @returns {Object} Returns a server properties object.
- */
-var createServerPropObject = function createServerPropObject (config, name, version) {
-  // base object for any of the 2 allowed protocols
-  var oServerProp = {
-		name: name,
-		version: version,
-	formatters: getJsonFormaters()
-  };
+        if(req.url !== '/'){
+            let except      = exceptedRoutes;
 
-  // set up certs if HTTPS server
-  if(config.server.protocol === "HTTPS"){
-	let fs = require("fs");
-	//Adding certs for secure server
-		if (config.server.tsl.cert)
-		  oServerProp.certificate = fs.readFileSync(config.server.tsl.cert);
-		if (config.tsl.key)
-		  oServerProp.key = fs.readFileSync(config.server.tsl.key);
+            let isExcepted  = false;
+
+            for (var i = except.length; i--;){
+              if(req.url.indexOf(except[i]) > -1){
+                isExcepted = true;
+                break;
+              }
+            }
+
+            if(!isExcepted)
+              return next(new restify.InvalidVersionError('This is an invalid version'));
+          }
+
+      }
+
+      next();
   }
 
-  // if logging enabled, create a new logger instance
-  if(config.log.enabled === true){
-	oServerProp.log = tracer;
-  }
 
-  if(config.log.enabled === true){
-	oServerProp.log.info('Server started with log level %s', config.log.level);
-  }
-
-  return oServerProp;
-}
+  return versioningMiddleware;
+};
