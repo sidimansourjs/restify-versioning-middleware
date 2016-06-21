@@ -1,0 +1,27 @@
+{
+  "name": "restify-versioning-middleware",
+  "version": "1.0.0",
+  "description": "A module that offers a function that can be user as a restify.js middleware. The module will check incoming calls (as a PRE handler in Restify) and will throw an `InvalidVersionError` when no version has been received in neither URL not request headers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/*Test.js  --recursive"
+  },
+  "keywords": [
+    "restify",
+    "server",
+    "api",
+    "rest"
+  ],
+  "engines": {
+    "node": "4.x"
+  },
+  "author": "SidiMansourJs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sidimansourjs/restify-versioning-middleware.git"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {}
+}
